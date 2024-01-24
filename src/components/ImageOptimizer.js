@@ -8,29 +8,36 @@ const ImageOptimizer = () => {
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
 
   const isFileTypeSupported = (file) => {
-    const supportedFileTypes = ["image/png", "image/jpeg", "image/jpg"];
+    const supportedFileTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/gif",
+      "image/bmp",
+      "image/tiff",
+    ];
     return supportedFileTypes.includes(file.type);
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
 
-    // Clear the unsupportedFiles state when a new file is selected
-    setUnsupportedFiles([]);
-
-    // Check if the file type is supported
-    if (!isFileTypeSupported(file)) {
+    if (isUnsupportedFileType(file)) {
+      // If the file type is unsupported, update the list of unsupported files
       setUnsupportedFiles([file.name]);
       setSelectedFile(null);
-      return;
+      setOptimizedDataURL(null);
+    } else {
+      // If the file type is supported, update the selected file
+      setSelectedFile(file);
+      // Reset the list of unsupported files
+      setUnsupportedFiles([]);
     }
-
-    setSelectedFile(file);
   };
 
   const isUnsupportedFileType = (file) => {
     // Define the list of unsupported file types
-    const unsupportedTypes = ["image/svg+xml"];
+    const unsupportedTypes = ["image/svg+xml", "image/tiff", "image/tif"];
 
     // Check if the file type is in the list of unsupported types
     return unsupportedTypes.includes(file.type);
@@ -122,25 +129,25 @@ const ImageOptimizer = () => {
     if (optimizedDataURL) {
       // Create a temporary anchor element
       const downloadLink = document.createElement("a");
-      downloadLink.href = optimizedDataURL;
 
       // Modify the downloaded file name to be URL-friendly
       const originalFileName = selectedFile.name;
-      const fileExtension = originalFileName.split(".").pop(); // Get the file extension
+      const fileExtension = selectedFormat === "jpg" ? "jpeg" : selectedFormat; // Use "jpeg" for JPG format
       const fileNameWithoutExtension = originalFileName.replace(
         /\.[^/.]+$/,
         ""
-      ); // Remove the file extension
+      );
       const sanitizedFileName = fileNameWithoutExtension
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-") // Replace non-alphanumeric characters with hyphens
-        .replace(/-+/g, "-") // Replace consecutive hyphens with a single hyphen
-        .replace(/^-+|-+$/g, ""); // Remove leading and trailing hyphens
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
       const yubiFileName = `yubi-${sanitizedFileName}.${fileExtension}`;
       downloadLink.download = yubiFileName;
 
       // Trigger a click on the anchor element to start the download
+      downloadLink.href = optimizedDataURL;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
