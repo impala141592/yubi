@@ -5,10 +5,35 @@ const ImageOptimizer = () => {
   const [selectedFormat, setSelectedFormat] = useState("png");
   const [optimizedDataURL, setOptimizedDataURL] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [unsupportedFiles, setUnsupportedFiles] = useState([]);
+
+  const isFileTypeSupported = (file) => {
+    const supportedFileTypes = ["image/png", "image/jpeg", "image/jpg"];
+    return supportedFileTypes.includes(file.type);
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+
+    // Clear the unsupportedFiles state when a new file is selected
+    setUnsupportedFiles([]);
+
+    // Check if the file type is supported
+    if (!isFileTypeSupported(file)) {
+      setUnsupportedFiles([file.name]);
+      setSelectedFile(null);
+      return;
+    }
+
     setSelectedFile(file);
+  };
+
+  const isUnsupportedFileType = (file) => {
+    // Define the list of unsupported file types
+    const unsupportedTypes = ["image/svg+xml"];
+
+    // Check if the file type is in the list of unsupported types
+    return unsupportedTypes.includes(file.type);
   };
 
   const handleFormatChange = (event) => {
@@ -163,9 +188,19 @@ const ImageOptimizer = () => {
           ref={fileInputRef}
         />
       </div>
+      {unsupportedFiles.length > 0 && (
+        <div>
+          <p>Unsupported Files:</p>
+          <ul>
+            {unsupportedFiles.map((fileName) => (
+              <li key={fileName}>{fileName}</li>
+            ))}
+          </ul>
+          <p>Please choose a different file.</p>
+        </div>
+      )}
       {selectedFile && (
         <div>
-          {/* <p>Selected File: {selectedFile.name}</p> */}
           <label>
             Output Format:
             <select value={selectedFormat} onChange={handleFormatChange}>
@@ -182,6 +217,12 @@ const ImageOptimizer = () => {
           {optimizedDataURL && !isOptimizing && (
             <div>
               <p>Image Optimized!</p>
+              <img
+                src={optimizedDataURL}
+                alt="Optimized"
+                style={{ maxWidth: "100%" }}
+              />
+
               <button onClick={handleDownload} disabled={!optimizedDataURL}>
                 Download Optimized Image
               </button>
