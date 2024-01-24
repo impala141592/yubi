@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const ImageOptimizer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -6,24 +6,9 @@ const ImageOptimizer = () => {
   const [optimizedDataURL, setOptimizedDataURL] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  useEffect(() => {
-    // Load state from localStorage on component mount
-    const storedSelectedFile = JSON.parse(localStorage.getItem("selectedFile"));
-    if (storedSelectedFile) {
-      setSelectedFile(storedSelectedFile);
-      setOptimizedDataURL(null); // Reset optimizedDataURL when loading a file
-    }
-  }, []);
-
-  useEffect(() => {
-    // Save state to localStorage whenever selectedFile changes
-    localStorage.setItem("selectedFile", JSON.stringify(selectedFile));
-  }, [selectedFile]);
-
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
-    setOptimizedDataURL(null); // Reset optimizedDataURL when a new file is selected
   };
 
   const handleFormatChange = (event) => {
@@ -44,6 +29,7 @@ const ImageOptimizer = () => {
 
     reader.onload = (e) => {
       const img = new Image();
+      img.src = e.target.result;
 
       img.onload = () => {
         const canvas = document.createElement("canvas");
@@ -81,18 +67,17 @@ const ImageOptimizer = () => {
         setOptimizedDataURL(optimizedDataURL);
         setIsOptimizing(false);
       };
-
-      img.src = e.target.result;
     };
 
     reader.readAsDataURL(file);
   };
 
   const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    setSelectedFile(file);
-    setOptimizedDataURL(null); // Reset optimizedDataURL when a new file is selected
+    if (!selectedFile) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      setSelectedFile(file);
+    }
   };
 
   const handleDragOver = (event) => {
