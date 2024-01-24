@@ -1,0 +1,87 @@
+* {
+  padding: 0;
+  margin: 0;
+  border: none;
+  outline: none;
+  background: none;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  list-style: none;
+  text-decoration: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: inherit;
+}
+
+.top-bar {
+  width: 100%;
+  height: 48px;
+  color: #faf1fa;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.top-bar .logo {
+  height: 100%;
+}
+
+.Yubi {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  background-color: #daa520;
+  background-color: #ffef61;
+  background-color: #342e37;
+  font-size: 16px;
+}
+
+.app-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+}
+@media (min-width: 1300px) {
+  .app-container {
+    width: 1300px;
+  }
+}
+@media (min-width: 768px) {
+  .app-container {
+    padding: 24px;
+    gap: 24px;
+  }
+}
+
+.tool {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #28b0a2;
+  background-color: #ecc636;
+  background-color: goldenrod;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.2);
+}
+
+.footer {
+  width: 100%;
+  height: 48px;
+  background-color: #197070;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: inset 0px 0px 12px 0px rgba(0, 0, 0, 0.6);
+}/*# sourceMappingURL=style.css.map */
