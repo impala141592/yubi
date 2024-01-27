@@ -7,46 +7,32 @@ const ImageOptimizer = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [unsupportedFiles, setUnsupportedFiles] = useState([]);
 
-  const isFileTypeSupported = (file) => {
-    const supportedFileTypes = [
-      "image/png",
-      "image/jpeg",
-      "image/jpg",
-      "image/gif",
-      "image/bmp",
-      "image/tiff",
-    ];
-    return supportedFileTypes.includes(file.type);
+  //Check if the file type is supported
+  const isFileTypeUnsupported = (file) => {
+    const unsupportedTypes = ["image/svg+xml", "image/tiff", "image/tif"];
+    return unsupportedTypes.includes(file.type);
   };
 
+  // Handles the change event when a user selects a file. Checks if the file type is unsupported and updates state accordingly.
   const handleFileChange = (event) => {
     const file = event.target.files[0];
 
-    if (isUnsupportedFileType(file)) {
-      // If the file type is unsupported, update the list of unsupported files
+    if (isFileTypeUnsupported(file)) {
       setUnsupportedFiles([file.name]);
       setSelectedFile(null);
       setOptimizedDataURL(null);
     } else {
-      // If the file type is supported, update the selected file
       setSelectedFile(file);
-      // Reset the list of unsupported files
       setUnsupportedFiles([]);
     }
-  };
-
-  const isUnsupportedFileType = (file) => {
-    // Define the list of unsupported file types
-    const unsupportedTypes = ["image/svg+xml", "image/tiff", "image/tif"];
-
-    // Check if the file type is in the list of unsupported types
-    return unsupportedTypes.includes(file.type);
   };
 
   const handleFormatChange = (event) => {
     setSelectedFormat(event.target.value);
   };
 
+  // Initiates the optimization process if a file is selected, setting the optimization flag to true and calling the optimizeImage function.
+  // Displays a console message if no file is selected.
   const handleOptimize = () => {
     if (selectedFile) {
       setIsOptimizing(true);
@@ -125,28 +111,23 @@ const ImageOptimizer = () => {
 
   const fileInputRef = React.createRef();
 
+  const getSanitizedFileName = (fileName) => {
+    return fileName
+      .replace(/\.[^/.]+$/, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   const handleDownload = () => {
     if (optimizedDataURL) {
-      // Create a temporary anchor element
       const downloadLink = document.createElement("a");
-
-      // Modify the downloaded file name to be URL-friendly
-      const originalFileName = selectedFile.name;
-      const fileExtension = selectedFormat === "jpg" ? "jpeg" : selectedFormat; // Use "jpeg" for JPG format
-      const fileNameWithoutExtension = originalFileName.replace(
-        /\.[^/.]+$/,
-        ""
-      );
-      const sanitizedFileName = fileNameWithoutExtension
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
+      const fileExtension = selectedFormat === "jpg" ? "jpeg" : selectedFormat;
+      const sanitizedFileName = getSanitizedFileName(selectedFile.name);
       const yubiFileName = `yubi-${sanitizedFileName}.${fileExtension}`;
-      downloadLink.download = yubiFileName;
 
-      // Trigger a click on the anchor element to start the download
+      downloadLink.download = yubiFileName;
       downloadLink.href = optimizedDataURL;
       document.body.appendChild(downloadLink);
       downloadLink.click();
@@ -157,7 +138,7 @@ const ImageOptimizer = () => {
   };
 
   const handleChooseDifferentFile = (event) => {
-    event.preventDefault(); // Prevent the default behavior (opening file selection window)
+    event.preventDefault();
     setSelectedFile(null);
     setOptimizedDataURL(null);
   };
