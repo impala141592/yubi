@@ -128,12 +128,37 @@ const ImageOptimizer = () => {
     event.preventDefault();
     const files = event.dataTransfer.files;
     const newSelectedFiles = [];
+    setUploadErrorMessage(null);
+
+    if (selectedFiles.length + files.length > 5) {
+      setUploadErrorMessage("Too many files. Please upload up to 5 files.");
+      return;
+    }
 
     for (const file of files) {
-      if (!isFileTypeUnsupported(file)) {
-        newSelectedFiles.push(file);
+      if (isFileTypeUnsupported(file)) {
+        setUploadErrorMessage(
+          `Unsupported file type. Can't optimize ${
+            file.type.match(/\/([^+/]+)/)[1]
+          }`
+        );
+      } else {
+        const maxSizeInMB = 2.2;
+        const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // 5MB
+        if (file.size > maxSizeInBytes) {
+          setUploadErrorMessage(
+            `File size exceeds the limit. Please upload files up to ${maxSizeInMB}MB.`
+          );
+        } else {
+          newSelectedFiles.push(file);
+        }
       }
     }
+
+    setSelectedFiles((prevSelectedFiles) => [
+      ...prevSelectedFiles,
+      ...newSelectedFiles,
+    ]);
   };
 
   const handleDragOver = (event) => {
@@ -195,7 +220,6 @@ const ImageOptimizer = () => {
 
   return (
     <div>
-      <h1>Image Optimizer</h1>
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -235,6 +259,7 @@ const ImageOptimizer = () => {
           multiple
         />
       </div>
+
       {selectedFiles.length > 0 && (
         <div>
           <label>
