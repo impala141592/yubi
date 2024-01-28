@@ -1,15 +1,13 @@
-import yubiLettermarkWhite from "../assets/images/yubiLogotypeWhite.svg";
+import yubiLettermarkBlack from "../assets/images/yubiLogotypeBlack.svg";
 
 const TopBar = () => {
   return (
     <div className="top-bar">
       <img
         className="logo"
-        src={yubiLettermarkWhite}
+        src={yubiLettermarkBlack}
         alt="yubi logo lettermark white"
       />
-
-      <span>time to optimise your web apps</span>
     </div>
   );
 };
