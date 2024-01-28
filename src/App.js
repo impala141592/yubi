@@ -5,12 +5,9 @@ import ImageOptimizer from "./components/ImageOptimizer";
 function App() {
   return (
     <div className="Yubi">
+      <TopBar />
       <div className="app-container">
-        <TopBar />
-        <div className="tool">
-          <ImageOptimizer />
-        </div>
-        <div className="footer"></div>
+        <ImageOptimizer />
       </div>
     </div>
   );
