@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import FileDropZone from "./FileDropZone";
 
 const ImageOptimizer = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -7,10 +8,19 @@ const ImageOptimizer = () => {
   const [optimizedDataURLs, setOptimizedDataURLs] = useState([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState(null);
   const [originalFileSizes, setOriginalFileSizes] = useState([]);
+  const [oversizedFiles, setOversizedFiles] = useState([]);
 
-  const bytesToMB = (bytes) => {
-    const megabytes = bytes / (1024 * 1024);
-    return megabytes.toFixed(2) + "MB";
+  const maxFileSize = 2.2;
+  const maxFileLimit = 5;
+  const fileInputRef = React.createRef();
+
+  const sanitizeFileName = (fileName) => {
+    return fileName
+      .replace(/\.[^/.]+$/, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
   };
 
   const isFileTypeUnsupported = (file) => {
@@ -18,41 +28,67 @@ const ImageOptimizer = () => {
     return unsupportedTypes.includes(file.type);
   };
 
-  const handleFileChange = (event) => {
-    const files = event.target.files;
-    const newSelectedFiles = [];
+  const handleFileUpload = (event, operationType) => {
+    event.preventDefault();
+    let files;
 
+    if (operationType === "change") {
+      files = event.target.files;
+    } else if (operationType === "drop") {
+      files = event.dataTransfer.files;
+    }
+
+    const newSelectedFiles = [];
+    const duplicateFiles = [];
     setUploadErrorMessage(null);
 
     if (selectedFiles.length + files.length > 5) {
-      setUploadErrorMessage("Too many files. Please upload up to 5 files.");
+      setUploadErrorMessage(
+        `Too many files. Please upload up to ${maxFileLimit} files.`
+      );
       return;
     }
 
     for (const file of files) {
-      // Check if the file type is unsupported
-      if (isFileTypeUnsupported(file)) {
-        setUploadErrorMessage(
-          `Unsupported file type. Can't optimize ${
-            file.type.match(/\/([^+/]+)/)[1]
-          }`
-        );
+      if (
+        selectedFiles.some((selectedFile) => selectedFile.name === file.name)
+      ) {
+        duplicateFiles.push(file.name);
       } else {
-        const maxSizeInMB = 2.2;
-        const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // 5MB
-        if (file.size > maxSizeInBytes) {
+        if (isFileTypeUnsupported(file)) {
           setUploadErrorMessage(
-            `File size exceeds the limit. Please upload files up to ${maxSizeInMB}MB.`
+            `Unsupported file type. Can't optimize .${
+              file.type.match(/\/([^+/]+)/)[1]
+            } files.`
           );
         } else {
-          newSelectedFiles.push(file);
+          const maxSizeInBytes = maxFileSize * 1024 * 1024;
+          if (file.size > maxSizeInBytes) {
+            setOversizedFiles((prevOversizedFiles) => [
+              ...prevOversizedFiles,
+              file.name,
+            ]);
+            // TODO: fix error message to display all oversized file names
+            setUploadErrorMessage(
+              `File "${file.name}" exceeds the file size limit. Please upload files up to ${maxFileSize}MB.`
+            );
+          } else {
+            newSelectedFiles.push(file);
+          }
         }
       }
     }
+
     setSelectedFiles((prevSelectedFiles) => [
       ...prevSelectedFiles,
       ...newSelectedFiles,
     ]);
+
+    if (duplicateFiles.length > 0) {
+      setUploadErrorMessage(
+        `File "${duplicateFiles.join(", ")}" is already uploaded.`
+      );
+    }
   };
 
   const handleFormatChange = (event) => {
@@ -124,69 +160,12 @@ const ImageOptimizer = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const files = event.dataTransfer.files;
-    const newSelectedFiles = [];
-    setUploadErrorMessage(null);
-
-    if (selectedFiles.length + files.length > 5) {
-      setUploadErrorMessage("Too many files. Please upload up to 5 files.");
-      return;
-    }
-
-    for (const file of files) {
-      if (isFileTypeUnsupported(file)) {
-        setUploadErrorMessage(
-          `Unsupported file type. Can't optimize ${
-            file.type.match(/\/([^+/]+)/)[1]
-          }`
-        );
-      } else {
-        const maxSizeInMB = 2.2;
-        const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // 5MB
-        if (file.size > maxSizeInBytes) {
-          setUploadErrorMessage(
-            `File size exceeds the limit. Please upload files up to ${maxSizeInMB}MB.`
-          );
-        } else {
-          newSelectedFiles.push(file);
-        }
-      }
-    }
-
-    setSelectedFiles((prevSelectedFiles) => [
-      ...prevSelectedFiles,
-      ...newSelectedFiles,
-    ]);
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleSelectImageClick = () => {
-    if (selectedFiles.length === 0) {
-      fileInputRef.current.click();
-    }
-  };
-  const fileInputRef = React.createRef();
-
-  const getSanitizedFileName = (fileName) => {
-    return fileName
-      .replace(/\.[^/.]+$/, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  };
-
   const handleDownload = (index) => {
     if (optimizedDataURLs[index]) {
       const downloadLink = document.createElement("a");
       const fileExtension = selectedFormat === "jpg" ? "jpeg" : selectedFormat;
 
-      const sanitizedFileName = getSanitizedFileName(selectedFiles[index].name);
+      const sanitizedFileName = sanitizeFileName(selectedFiles[index].name);
       const yubiFileName = `yubi-${sanitizedFileName}.${fileExtension}`;
 
       downloadLink.download = yubiFileName;
@@ -196,7 +175,7 @@ const ImageOptimizer = () => {
       document.body.removeChild(downloadLink);
     } else {
       console.log(
-        `No optimized image available for download: Image ${index + 1}`
+        `No optimized image available for download: Image ${index + 1}` //TODO add error message
       );
     }
   };
@@ -207,7 +186,7 @@ const ImageOptimizer = () => {
         handleDownload(i);
       }
     } else {
-      console.log("No optimized images available for download.");
+      console.log("No optimized images available for download."); //TODO add error message
     }
   };
 
@@ -219,46 +198,21 @@ const ImageOptimizer = () => {
   };
 
   return (
-    <div>
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        style={{
-          border: "2px dashed #aaaaaa",
-          borderRadius: "8px",
-          padding: "20px",
-          textAlign: "center",
-          cursor: "pointer",
-        }}
-        onClick={handleSelectImageClick}
-      >
-        {uploadErrorMessage && (
-          <p style={{ color: "red" }}>{uploadErrorMessage}</p>
-        )}
-        {selectedFiles.length > 0 ? (
-          <div>
-            <p>Selected Files:</p>
-            <ul>
-              {selectedFiles.map((file, index) => (
-                <li key={index}>{file.name}</li>
-              ))}
-            </ul>
-            <button onClick={handleChooseDifferentFile}>
-              Choose Different Files
-            </button>
-          </div>
-        ) : (
-          <p>Drag and drop images here or click to select them.</p>
-        )}
-        <input
-          type="file"
-          onChange={handleFileChange}
-          accept="image/*"
-          style={{ display: "none" }}
-          ref={fileInputRef}
-          multiple
-        />
-      </div>
+    <div className="optimizer">
+      <FileDropZone
+        dropFiles={(event) => handleFileUpload(event, "drop")}
+        selectedFiles={selectedFiles}
+        chooseDifferentFiles={handleChooseDifferentFile}
+        changeFile={(event) => handleFileUpload(event, "change")}
+        fileRef={fileInputRef}
+        maxFileSize={maxFileSize}
+        maxFileLimit={maxFileLimit}
+        uploadErrorMessage={uploadErrorMessage}
+      />
+
+      {/* {uploadErrorMessage && (
+        <p style={{ color: "red" }}>{uploadErrorMessage}</p>
+      )} */}
 
       {selectedFiles.length > 0 && (
         <div>
@@ -286,8 +240,12 @@ const ImageOptimizer = () => {
                     style={{ maxWidth: "10%" }}
                   />
                   <p>
-                    Original Size: {bytesToMB(originalFileSizes[index])} | New
-                    Size: {bytesToMB(optimizedDataURL.length)}
+                    Original Size:
+                    {(originalFileSizes[index] / (1024 * 1024)).toFixed(2) +
+                      "MB"}
+                    | New Size:
+                    {(optimizedDataURLs.length / (1024 * 1024)).toFixed(2) +
+                      "MB"}
                   </p>
                   <button
                     onClick={() => handleDownload(index)}
