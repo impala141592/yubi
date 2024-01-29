@@ -35,4 +35,45 @@
 .optimizer {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.processed-file-list {
+  // background: tomato;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: 24px;
+
+  .processed-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 80px;
+
+    .processed-image {
+      width: 80px;
+      height: 80px;
+      background-color: #faf1fa;
+      border-radius: 8px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .processed-file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
 }
