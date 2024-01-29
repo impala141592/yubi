@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import FileDropZone from "./FileDropZone";
-import ProgressBar from "./ProgressBar";
+// import ProgressBar from "./ProgressBar";
 
 const ImageOptimizer = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedFormat, setSelectedFormat] = useState("png");
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [processedImages, setProcessedImages] = useState([]);
   const [optimizedDataURLs, setOptimizedDataURLs] = useState([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState(null);
   const [originalFileSizes, setOriginalFileSizes] = useState([]);
   const [oversizedFiles, setOversizedFiles] = useState([]);
 
   const maxFileSize = 5;
-  const maxFileLimit = 5;
+  const maxFileLimit = 6;
   const fileInputRef = React.createRef();
 
   const sanitizeFileName = (fileName) => {
@@ -44,7 +45,7 @@ const ImageOptimizer = () => {
     const newSelectedFiles = [];
     const duplicateFiles = [];
 
-    if (selectedFiles.length + files.length > 5) {
+    if (selectedFiles.length + files.length > maxFileLimit) {
       setUploadErrorMessage(
         `Too many files. Please upload up to ${maxFileLimit} files.`
       );
@@ -117,6 +118,7 @@ const ImageOptimizer = () => {
       setUploadErrorMessage("No files selected.");
     }
   };
+
   const optimizeImage = (file, format) => {
     const reader = new FileReader();
 
@@ -148,10 +150,27 @@ const ImageOptimizer = () => {
 
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
+        const sanitizedFileName = sanitizeFileName(file.name);
+        const yubiFileName = `yubi-${sanitizedFileName}.${format}`;
+
         const optimizedDataURL =
           format === "jpg"
             ? canvas.toDataURL("image/jpeg", 0.8)
             : canvas.toDataURL("image/png");
+
+        const compressedSize = optimizedDataURL.length;
+
+        const processedImage = {
+          fileName: yubiFileName,
+          originalSize: file.size,
+          compressedSize: compressedSize,
+          url: optimizedDataURL,
+        };
+
+        setProcessedImages((prevProcessedImages) => [
+          ...prevProcessedImages,
+          processedImage,
+        ]);
 
         setOptimizedDataURLs((prevOptimizedDataURLs) => [
           ...prevOptimizedDataURLs,
@@ -164,6 +183,8 @@ const ImageOptimizer = () => {
 
     reader.readAsDataURL(file);
   };
+
+  console.log("optimized", processedImages);
 
   const handleDownload = (index) => {
     if (optimizedDataURLs[index]) {
@@ -219,55 +240,53 @@ const ImageOptimizer = () => {
       )} */}
 
       {selectedFiles.length > 0 && (
-        <div>
-          <label>
-            Output Format:
-            <select value={selectedFormat} onChange={handleFormatChange}>
-              <option value="png">PNG</option>
-              <option value="jpg">JPEG</option>
-            </select>
-          </label>
-          <button onClick={handleOptimize} disabled={isOptimizing}>
-            Optimize Images
-          </button>
-          <ProgressBar isOptimizing={isOptimizing} />
-
-          {/* {isOptimizing && (
-            <ProgressBar isOptimizing={isOptimizing} />
-            // <p>Optimizing images... (show loading icon or progress bar)</p>
-          )} */}
+        <>
+          <div className="optimizer-controls">
+            <label>
+              Output Format:
+              <select value={selectedFormat} onChange={handleFormatChange}>
+                <option value="png">PNG</option>
+                <option value="jpg">JPEG</option>
+              </select>
+            </label>
+            <button onClick={handleOptimize} disabled={isOptimizing}>
+              Optimize Images
+            </button>
+          </div>
+          {/* <ProgressBar isOptimizing={isOptimizing} /> */}
           {optimizedDataURLs.length > 0 && !isOptimizing && (
-            <div>
-              <p>Images Optimized!</p>
-              {optimizedDataURLs.map((optimizedDataURL, index) => (
-                <div key={index}>
-                  <img
-                    src={optimizedDataURL}
-                    alt={`Optimized ${selectedFiles[index].name}`}
-                    style={{ maxWidth: "10%" }}
-                  />
-                  <p>
-                    Original Size:
-                    {(originalFileSizes[index] / (1024 * 1024)).toFixed(2) +
-                      "MB"}
-                    | New Size:
-                    {(optimizedDataURLs.length / (1024 * 1024)).toFixed(2) +
-                      "MB"}
-                  </p>
-                  <button
-                    onClick={() => handleDownload(index)}
-                    disabled={!optimizedDataURL}
-                  >
-                    Download Optimized Image
-                  </button>
+            <div className="processed-file-list">
+              {processedImages.map((processedImage, index) => (
+                <div key={index} className="processed-file">
+                  <div className="processed-image">
+                    <img
+                      src={processedImage.url}
+                      alt={`yubi ${processedImage.fileName}`}
+                    />
+                  </div>
+                  <div className="processed-file-info">
+                    <span>{processedImage.fileName}</span>
+                    <p className="info">
+                      Original Size:{" "}
+                      {(processedImage.originalSize / (1024 * 1024)).toFixed(2)}{" "}
+                      MB | Compressed Size:{" "}
+                      {(processedImage.compressedSize / (1024 * 1024)).toFixed(
+                        2
+                      )}{" "}
+                      MB
+                    </p>
+                    <button
+                      onClick={() => handleDownload(index)}
+                      disabled={!processedImage.url}
+                    >
+                      Download Optimized Image
+                    </button>
+                  </div>
                 </div>
               ))}
-              {optimizedDataURLs.length > 1 && (
-                <button onClick={handleDownloadAll}>Download All Images</button>
-              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
