@@ -9,6 +9,7 @@ const ImageOptimizer = () => {
   const [processedImages, setProcessedImages] = useState([]);
   const [optimizedDataURLs, setOptimizedDataURLs] = useState([]);
   const [uploadErrorMessage, setUploadErrorMessage] = useState(null);
+  // eslint-disable-next-line
   const [originalFileSizes, setOriginalFileSizes] = useState([]);
   const [oversizedFiles, setOversizedFiles] = useState([]);
 
@@ -220,6 +221,7 @@ const ImageOptimizer = () => {
     setOptimizedDataURLs([]);
     setUploadErrorMessage(null);
     setOversizedFiles([]);
+    setProcessedImages([]);
   };
 
   return (
@@ -284,6 +286,9 @@ const ImageOptimizer = () => {
                   </div>
                 </div>
               ))}
+              {optimizedDataURLs.length > 1 && (
+                <button onClick={handleDownloadAll}>Download All Images</button>
+              )}
             </div>
           )}
         </>
