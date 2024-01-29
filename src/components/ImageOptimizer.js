@@ -29,6 +29,8 @@ const ImageOptimizer = () => {
   };
 
   const handleFileUpload = (event, operationType) => {
+    setUploadErrorMessage(null);
+    setOversizedFiles([]);
     event.preventDefault();
     let files;
 
@@ -40,7 +42,6 @@ const ImageOptimizer = () => {
 
     const newSelectedFiles = [];
     const duplicateFiles = [];
-    setUploadErrorMessage(null);
 
     if (selectedFiles.length + files.length > 5) {
       setUploadErrorMessage(
@@ -64,19 +65,21 @@ const ImageOptimizer = () => {
         } else {
           const maxSizeInBytes = maxFileSize * 1024 * 1024;
           if (file.size > maxSizeInBytes) {
-            setOversizedFiles((prevOversizedFiles) => [
-              ...prevOversizedFiles,
-              file.name,
-            ]);
-            // TODO: fix error message to display all oversized file names
-            setUploadErrorMessage(
-              `File "${file.name}" exceeds the file size limit. Please upload files up to ${maxFileSize}MB.`
-            );
+            oversizedFiles.push(file.name);
           } else {
             newSelectedFiles.push(file);
           }
         }
       }
+    }
+
+    if (oversizedFiles.length > 0) {
+      setOversizedFiles([]);
+      setUploadErrorMessage(
+        `Files: ${oversizedFiles.join(
+          ", "
+        )} exceed the file size limit. Please upload files up to ${maxFileSize}MB.`
+      );
     }
 
     setSelectedFiles((prevSelectedFiles) => [
@@ -96,6 +99,7 @@ const ImageOptimizer = () => {
   };
 
   const handleOptimize = () => {
+    setOversizedFiles([]);
     if (selectedFiles.length > 0) {
       setIsOptimizing(true);
       setOriginalFileSizes([]);
@@ -193,9 +197,8 @@ const ImageOptimizer = () => {
     setSelectedFiles([]);
     setOptimizedDataURLs([]);
     setUploadErrorMessage(null);
+    setOversizedFiles([]);
   };
-
-  console.log("oversizedFiles", oversizedFiles);
 
   return (
     <div className="optimizer">
