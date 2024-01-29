@@ -4,9 +4,10 @@ const ChooseFilesInput = ({ fileRef, changeFile }) => {
   return (
     <label className="custom-file-select button">
       <span className="material-symbols-outlined">upload</span>
-      Upload files from your computer
+      Upload files from your drive
       <input
         type="file"
+        id="file-upload"
         onChange={changeFile}
         accept="image/*"
         style={{ display: "none" }}
@@ -55,7 +56,7 @@ const FileDropZone = ({
           </button>
         </>
       ) : (
-        <>
+        <div className="upload-files-container">
           <span className="title">
             Drag and drop images here or click to select up to {maxFileLimit}{" "}
             files.
@@ -66,7 +67,7 @@ const FileDropZone = ({
           ) : (
             <span className="info">Max file size {maxFileSize}MB</span>
           )}
-        </>
+        </div>
       )}
     </div>
   );

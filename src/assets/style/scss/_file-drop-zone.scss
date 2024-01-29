@@ -1,7 +1,4 @@
 .file-drop-zone {
-  display: flex;
-  flex-direction: column;
-
   width: 100%;
   height: 400px;
   padding: 24px;
@@ -11,9 +8,15 @@
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 12px;
+
+  .upload-files-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
 
   .uploaded-file-list {
     width: 50%;

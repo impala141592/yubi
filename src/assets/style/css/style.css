@@ -68,8 +68,6 @@ button.outline,
 }
 
 .file-drop-zone {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 400px;
   padding: 24px;
@@ -78,7 +76,12 @@ button.outline,
   background-color: #efebf1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around;
+  align-items: center;
+}
+.file-drop-zone .upload-files-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
 }
