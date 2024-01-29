@@ -174,9 +174,7 @@ const ImageOptimizer = () => {
       downloadLink.click();
       document.body.removeChild(downloadLink);
     } else {
-      console.log(
-        `No optimized image available for download: Image ${index + 1}` //TODO add error message
-      );
+      setUploadErrorMessage("No optimized images available for download.");
     }
   };
 
@@ -186,7 +184,7 @@ const ImageOptimizer = () => {
         handleDownload(i);
       }
     } else {
-      console.log("No optimized images available for download."); //TODO add error message
+      setUploadErrorMessage("No optimized images available for download.");
     }
   };
 
@@ -196,6 +194,8 @@ const ImageOptimizer = () => {
     setOptimizedDataURLs([]);
     setUploadErrorMessage(null);
   };
+
+  console.log("oversizedFiles", oversizedFiles);
 
   return (
     <div className="optimizer">
