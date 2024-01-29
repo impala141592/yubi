@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import FileDropZone from "./FileDropZone";
+import ProgressBar from "./ProgressBar";
 
 const ImageOptimizer = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -10,7 +11,7 @@ const ImageOptimizer = () => {
   const [originalFileSizes, setOriginalFileSizes] = useState([]);
   const [oversizedFiles, setOversizedFiles] = useState([]);
 
-  const maxFileSize = 2.2;
+  const maxFileSize = 5;
   const maxFileLimit = 5;
   const fileInputRef = React.createRef();
 
@@ -229,9 +230,12 @@ const ImageOptimizer = () => {
           <button onClick={handleOptimize} disabled={isOptimizing}>
             Optimize Images
           </button>
-          {isOptimizing && (
-            <p>Optimizing images... (show loading icon or progress bar)</p>
-          )}
+          <ProgressBar isOptimizing={isOptimizing} />
+
+          {/* {isOptimizing && (
+            <ProgressBar isOptimizing={isOptimizing} />
+            // <p>Optimizing images... (show loading icon or progress bar)</p>
+          )} */}
           {optimizedDataURLs.length > 0 && !isOptimizing && (
             <div>
               <p>Images Optimized!</p>

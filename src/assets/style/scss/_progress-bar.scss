@@ -1,0 +1,29 @@
+.progress-bar {
+  height: 12px;
+  width: 100%;
+  padding: 2px;
+  border-radius: 6px;
+  box-shadow: 0px 2px 4px 0px #3d274830;
+  background: #342e37;
+
+  margin-top: 30px;
+  .progress-bar-inner {
+    height: 8px;
+    border-radius: 4px;
+    width: 0;
+    background-color: #f1af00;
+
+    &.optimizing {
+      animation: load 0.4s ease forwards;
+    }
+  }
+}
+
+@keyframes load {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
